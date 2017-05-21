@@ -14,7 +14,7 @@ hello_world = | greet("world")
 
 ifs
 ```
-fib = |a|
+fib := |a|
   if a < 3 then return a
   return fib(a - 1) + fib(a - 2)
 
@@ -24,7 +24,7 @@ if 100 + r'a string' == '100a string'
 
 data
 ```
-t = {
+t := {
     a: 'a table member'
     fun: |a, b|
       return a + b
