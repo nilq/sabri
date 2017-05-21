@@ -65,6 +65,22 @@ impl Sabri {
         self.set_var("false", Value::Bool(false));
 
         self.set_var("putsf", Value::native_func(native::func_printf));
+        self.set_var("putsl", Value::native_func(native::func_println));
+        self.set_var("puts", Value::native_func(native::func_print));
+
+        self.set_var("!",  Value::native_func(native::func_logic_not));
+        self.set_var("==", Value::native_func(native::func_cmp_eq));
+        self.set_var("!=", Value::native_func(native::func_cmp_ne));
+        self.set_var("<",  Value::native_func(native::func_cmp_lt));
+        self.set_var("<=", Value::native_func(native::func_cmp_le));
+        self.set_var(">",  Value::native_func(native::func_cmp_gt));
+        self.set_var(">=", Value::native_func(native::func_cmp_ge));
+        self.set_var("+",  Value::native_func(native::func_num_add));
+        self.set_var("-",  Value::native_func(native::func_num_sub));
+        self.set_var("*",  Value::native_func(native::func_num_mul));
+        self.set_var("/",  Value::native_func(native::func_num_div));
+        self.set_var("^",  Value::native_func(native::func_num_pow));
+        self.set_var("%",  Value::native_func(native::func_num_mod));
     }
 
     pub fn dump_bytecode(&self) {

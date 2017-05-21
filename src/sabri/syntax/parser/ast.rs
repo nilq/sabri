@@ -16,6 +16,11 @@ pub enum Expression {
     BoolLiteral(bool),
     Identifier(String),
 
+    Call {
+        func: Box<Expression>,
+        args: Box<Vec<Expression>>,
+    },
+
     Operation {
         left: Box<Expression>,
         op: Operand,
@@ -55,6 +60,17 @@ impl Expression {
                     program.emit_getvar(i as u16, env_index as u16)
                 },
                 None => return Err(ParserError::new(&format!("undeclared identifier: {}", id)))
+            },
+
+            Expression::Call {ref func, ref args} => {
+                try!(func.compile(sym, program));
+
+                for a in &**args {
+                    try!(a.compile(sym, program))
+                }
+
+                program.emit_call(args.len() as u16);
+                return Ok(())
             },
 
             Expression::Operation {ref left, ref op, ref right} => {

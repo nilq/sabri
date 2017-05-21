@@ -151,6 +151,33 @@ impl Run {
                     self.ip += 1
                 },
 
+                CALL => {
+                    let n_args = instr::d_op_12(instr) as usize;
+
+                    if self.val_stack.len() < n_args + 1 {
+                        return Err(RunError::new("call with not enough values in the val stack"));
+                    }
+
+                    let func_pos = self.val_stack.len() - (n_args + 1);
+                    let args_pos = func_pos + 1;
+
+                    let ret = match self.val_stack[func_pos] {
+                        Value::NativeFunc(ref f) => {
+                            let ret = try!(f.call(&self.val_stack[args_pos..], &self.env));
+                            self.ip += 1;
+
+                            Some(ret)
+                        },
+                        
+                        _ => return Err(RunError::new(&format!("can't call function: {}", self.val_stack[func_pos])))
+                    };
+
+                    self.val_stack.drain(func_pos..);
+                    if let Some(ret) = ret {
+                        self.val_stack.push(ret);
+                    }
+                }
+
                 ADD | SUB | MUL | DIV => {
                     if self.val_stack.len() < 2 {
                         return Err(RunError::new("can't operate with less than two values"));

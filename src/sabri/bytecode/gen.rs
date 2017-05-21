@@ -253,6 +253,7 @@ impl Program {
                            instr::d_op_12_12(instr).0,
                            instr::d_op_12_12(instr).1)
                 }
+                
                 OP_POPENV => print!("popenv     {}", instr::d_op_12(instr)),
 
                 OP_GETVAR => {
@@ -260,6 +261,7 @@ impl Program {
                            instr::d_op_12_12(instr).0,
                            instr::d_op_12_12(instr).1)
                 }
+
                 OP_SETVAR => {
                     print!("setvar     {}, {}",
                            instr::d_op_12_12(instr).0,

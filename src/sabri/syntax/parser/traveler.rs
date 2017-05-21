@@ -1,4 +1,5 @@
 use lexer::{Token, TokenType};
+use parser::{ParserError, ParserResult};
 
 #[derive(Debug, Clone)]
 pub struct Traveler {
@@ -51,19 +52,19 @@ impl Traveler {
         self.current().content().clone()
     }
 
-    pub fn expect(&self, token: TokenType) -> Result<String, String> {
+    pub fn expect(&self, token: TokenType) -> ParserResult<String> {
         if self.current().token_type == token {
             Ok(self.current_content())
         } else {
-            Err(format!("expected '{:?}', found '{:?}'", token, self.current_content()))
+            Err(ParserError::new(&format!("expected '{:?}', found '{:?}'", token, self.current_content())))
         }
     }
 
-    pub fn expect_content(&self, content: &str) -> Result<String, String> {
+    pub fn expect_content(&self, content: &str) -> ParserResult<String> {
         if &self.current_content() == content {
             Ok(self.current_content())
         } else {
-            Err(format!("expected '{}', found '{:#?}'", content, self.current()))
+            Err(ParserError::new(&format!("expected '{}', found '{:#?}'", content, self.current())))
         }
     }
 

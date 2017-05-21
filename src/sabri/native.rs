@@ -18,7 +18,7 @@ impl NativeFunc {
 
     pub fn call(&self, args: &[Value], env: &Rc<Env>) -> RunResult<Value> {
         match (self.f)(args, env) {
-            Err(e) => Err(RunError::new("failed to call native")),
+            Err(e) => Err(RunError::new(&format!("failed to call native: {}", e))),
             Ok(x) => Ok(x),
         }
     }
@@ -194,6 +194,28 @@ pub fn func_printf(args: &[Value], _env: &Rc<Env>) -> RunResult<Value> {
     } else {
         Err(RunError::new("expected format string"))
     }
+}
+
+pub fn func_println(args: &[Value], _env: &Rc<Env>) -> RunResult<Value> {
+    let s : Vec<String> = args.iter().map(
+        |ref v| format!("{}", v)
+    ).collect();
+
+    let joined = s.join(" ");
+
+    println!("{}", joined);
+    Ok(Value::Null)
+}
+
+pub fn func_print(args: &[Value], _env: &Rc<Env>) -> RunResult<Value> {
+    let s : Vec<String> = args.iter().map(
+        |ref v| format!("{}", v)
+    ).collect();
+
+    let joined = s.join(" ");
+
+    print!("{}", joined);
+    Ok(Value::Null)
 }
 
 pub fn func_logic_not(args: &[Value], _env: &Rc<Env>) -> RunResult<Value> {
