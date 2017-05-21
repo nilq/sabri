@@ -12,7 +12,7 @@ use self::bytecode::{Addr, INVALID};
 
 pub struct Run {
     ip: u32,
-    env: Rc<Env>,
+    pub env: Rc<Env>,
     env_stack: Vec<Rc<Env>>,
     val_stack: Vec<Value>,
     ret_stack: Vec<u32>,

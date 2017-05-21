@@ -40,7 +40,6 @@ fn repl() {
                         match Expression::Block(Box::new(stuff.clone())).compile(&sabri.sym_tab, &mut sabri.bytecode) {
                             Err(why) => println!("error: {}", why),
                             Ok(_)    => {
-                                runner.reset(sabri.env.clone());
                                 match runner.exec(100_000, &sabri.bytecode.instr, &sabri.bytecode.literals) {
                                     Err(e) => println!("{}", e),
                                     Ok(()) => (),
@@ -77,6 +76,8 @@ fn test() {
 ~ a comment
 a := 100
 a  = "hey"
+
+putsl(a)
 "#;
 
     let mut sabri = Sabri::new();
@@ -108,8 +109,6 @@ a  = "hey"
             println!("{:#?}", stuff);                        
         },
     }
-
-    println!("{:#?}", done)
 }
 
 fn main() {

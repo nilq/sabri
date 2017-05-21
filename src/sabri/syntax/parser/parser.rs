@@ -116,8 +116,11 @@ impl Parser {
         let mut stack = vec![];
 
         while self.traveler.current_content() != ")" {
-            stack.push(try!(self.expression()));
+            if self.traveler.current_content() == "\n" {
+                break
+            }
 
+            stack.push(try!(self.expression()));
             self.traveler.next();
 
             if self.traveler.current_content() == "," {
