@@ -5,6 +5,7 @@ use rustyline::error::ReadlineError;
 mod sabri;
 use sabri::syntax;
 use sabri::Sabri;
+use sabri::bytecode::Run;
 
 use syntax::{lexer, parser};
 
@@ -40,7 +41,15 @@ fn repl() {
                                 Expression::EOF => (),
                                 _ => match ex.compile(&sabri.sym_tab, &mut sabri.bytecode) {
                                         Err(why) => println!("error: {}", why),
-                                        Ok(_)    => sabri.dump_bytecode(),
+                                        Ok(_)    => {
+                                            let mut runner = Run::new(sabri.env.clone());
+                                            match runner.exec(100_000, &sabri.bytecode.instr, &sabri.bytecode.literals) {
+                                                Err(e) => println!("{}", e),
+                                                Ok(()) => (),
+                                            }
+
+                                            sabri.dump_bytecode()
+                                        },
                                     },
                             },
                             _ => (),

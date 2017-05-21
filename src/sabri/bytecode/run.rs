@@ -42,7 +42,7 @@ impl Run {
 
     pub fn exec(&mut self, n: usize, instr: &[u32], literals: &[Value]) -> RunResult<()> {
         for _ in 0 .. n {
-            if self.ip == INVALID {
+            if self.ip == INVALID || self.ip >= instr.len() as u32 {
                 break
             }
 
@@ -166,6 +166,8 @@ impl Run {
 
                         _ => return Err(RunError::new("internal error: unhandled arithmetic op")),
                     };
+
+                    println!("result: {:#?}", result);
 
                     self.val_stack.drain(args_pos..);
                     self.val_stack.push(try!(result));

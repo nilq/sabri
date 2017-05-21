@@ -4,6 +4,7 @@ pub mod gen;
 pub mod run;
 
 pub use self::gen::{FixupContext, Program};
+pub use self::run::Run;
 
 pub use super::syntax;
 pub use syntax::parser::{ParserResult, ParserError};

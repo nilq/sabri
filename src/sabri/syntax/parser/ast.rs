@@ -1,4 +1,5 @@
 use std::rc::Rc;
+use std::fmt;
 
 use parser::bytecode::Program;
 use parser::{ParserResult, ParserError};
@@ -56,6 +57,27 @@ impl Expression {
                 None => return Err(ParserError::new(&format!("undeclared identifier: {}", id)))
             },
 
+            Expression::Operation {ref left, ref op, ref right} => {
+                match op {
+                    &Operand::Add |
+                    &Operand::Sub |
+                    &Operand::Mul |
+                    &Operand::Div => {
+                        try!(left.compile(sym, program));
+                        try!(right.compile(sym, program));
+
+                        match op {
+                            &Operand::Add => program.emit_add(),
+                            &Operand::Sub => program.emit_sub(),
+                            &Operand::Mul => program.emit_mul(),
+                            &Operand::Div => program.emit_div(),
+                            _ => return Err(ParserError::new(&format!("unhandled operator: {}", op))),
+                        }
+                    },
+                    _ => return Err(ParserError::new(&format!("unimplemented operator: {}", op))),
+                }
+            },
+
             _ => return Err(ParserError::new("accessing unimplemented codegen")),
         }
         Ok(())
@@ -75,8 +97,8 @@ pub enum Operand {
     Div,
     Mod,
     XOR,
-    Plus,
-    Minus,
+    Add,
+    Sub,
     Equals,
     NEquals,
     Lt,
@@ -87,14 +109,35 @@ pub enum Operand {
     Or,
 }
 
+impl fmt::Display for Operand {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Operand::Add => write!(f, "+"),
+            Operand::Sub => write!(f, "-"),
+            Operand::Mul => write!(f, "*"),
+            Operand::Div => write!(f, "/"),
+            Operand::Mod => write!(f, "%"),
+            Operand::XOR => write!(f, "^"),
+            Operand::Equals => write!(f, "=="),
+            Operand::NEquals => write!(f, "!="),
+            Operand::Lt => write!(f, "<"),
+            Operand::LtEquals => write!(f, "<="),
+            Operand::Gt => write!(f, ">"),
+            Operand::GtEquals => write!(f, ">="),
+            Operand::And => write!(f, "and"),
+            Operand::Or => write!(f, "or"),
+        }
+    }
+}
+
 pub fn operand(v: &str) -> Option<(Operand, u8)> {
     match v {
         "*"   => Some((Operand::Mul, 1)),
         "/"   => Some((Operand::Div, 1)),
         "%"   => Some((Operand::Mod, 1)),
         "^"   => Some((Operand::XOR, 1)),
-        "+"   => Some((Operand::Plus, 2)),
-        "-"   => Some((Operand::Minus, 2)),
+        "+"   => Some((Operand::Add, 2)),
+        "-"   => Some((Operand::Sub, 2)),
         "=="  => Some((Operand::Equals, 3)),
         "!="  => Some((Operand::NEquals, 3)),
         "<"   => Some((Operand::Lt, 4)),

@@ -18,7 +18,7 @@ pub use self::error::{RunError, RunErrorValue};
 pub type RunResult<T> = Result<T, RunError>;
 
 pub struct Sabri {
-    env:     Rc<Env>,
+    pub env:     Rc<Env>,
     pub sym_tab: Rc<SymTab>,
     pub bytecode: bytecode::Program,
 }
