@@ -10,7 +10,7 @@ use sabri::bytecode::Run;
 use syntax::{lexer, parser};
 
 use lexer::{BlockTree, process_branch};
-use parser::{Traveler, Parser, Statement, Expression};
+use parser::{Traveler, Parser, Expression};
 
 static PROMPT: &'static str = ">> ";
 
@@ -19,6 +19,7 @@ fn repl() {
     let mut rl = rustyline::Editor::<()>::new();
 
     let mut sabri = Sabri::new();
+    let mut runner = Run::new(sabri.env.clone());
 
     loop {
         let readline = rl.readline(PROMPT);
@@ -35,26 +36,19 @@ fn repl() {
 
                 match parser.parse() {
                     Err(why)  => println!("error: {}", why),
-                    Ok(stuff) => for e in stuff {
-                        match e.clone() {
-                            Statement::Expression(ex) => match *ex {
-                                Expression::EOF => (),
-                                _ => match ex.compile(&sabri.sym_tab, &mut sabri.bytecode) {
-                                        Err(why) => println!("error: {}", why),
-                                        Ok(_)    => {
-                                            let mut runner = Run::new(sabri.env.clone());
-                                            match runner.exec(100_000, &sabri.bytecode.instr, &sabri.bytecode.literals) {
-                                                Err(e) => println!("{}", e),
-                                                Ok(()) => (),
-                                            }
-
-                                            sabri.dump_bytecode()
-                                        },
-                                    },
+                    Ok(stuff) => {
+                        match Expression::Block(Box::new(stuff.clone())).compile(&sabri.sym_tab, &mut sabri.bytecode) {
+                            Err(why) => println!("error: {}", why),
+                            Ok(_)    => {
+                                runner.reset(sabri.env.clone());
+                                match runner.exec(100_000, &sabri.bytecode.instr, &sabri.bytecode.literals) {
+                                    Err(e) => println!("{}", e),
+                                    Ok(()) => (),
+                                }
+                                sabri.dump_bytecode()
                             },
-                            _ => (),
                         }
-                        println!("{:#?}", e)
+                        println!("{:#?}", stuff);                        
                     },
                 }
             }
@@ -81,11 +75,11 @@ fn repl() {
 fn test() {
     let test = r#"
 ~ a comment
-greet := |a|
-  print("yo, " + a)
-
-hello_world = | greet("world")
+a := 100
+a  = "hey"
 "#;
+
+    let mut sabri = Sabri::new();
 
     let mut blocks = BlockTree::new(test, 0);
     let indents    = blocks.indents();
@@ -94,6 +88,26 @@ hello_world = | greet("world")
     let done = process_branch(&root);
 
 
+    let traveler = Traveler::new(done.clone());
+    let mut parser = Parser::new(traveler);
+
+    match parser.parse() {
+        Err(why)  => println!("error: {}", why),
+        Ok(stuff) => {
+            match Expression::Block(Box::new(stuff.clone())).compile(&sabri.sym_tab, &mut sabri.bytecode) {
+                Err(why) => println!("error: {}", why),
+                Ok(_)    => {
+                    let mut runner = Run::new(sabri.env.clone());
+                    match runner.exec(100_000, &sabri.bytecode.instr, &sabri.bytecode.literals) {
+                        Err(e) => println!("{}", e),
+                        Ok(()) => (),
+                    }
+                    sabri.dump_bytecode()
+                },
+            }
+            println!("{:#?}", stuff);                        
+        },
+    }
 
     println!("{:#?}", done)
 }

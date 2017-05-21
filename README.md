@@ -3,6 +3,15 @@ my favorite working multi-paradigm, interpreted programming language.
 
 ## draft
 
+basic
+```
+str := "a string"
+str = 123 ~ dynamic
+
+~ empty declaration?
+null? :=
+```
+
 funcs
 ```
 ~ a comment
@@ -24,6 +33,7 @@ if 100 + r'a string' == '100a string'
 
 data
 ```
+~ todo
 t := {
     a: 'a table member'
     fun: |a, b|

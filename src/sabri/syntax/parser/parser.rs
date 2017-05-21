@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use parser::{Traveler, Expression, Statement, Operand, ParserResult, operand};
 use parser::{ParserError, ParserErrorValue};
 
@@ -26,6 +28,26 @@ impl Parser {
 
     pub fn statement(&mut self) -> ParserResult<Statement> {
         match self.traveler.current().token_type {
+            TokenType::Identifier => {
+                let id = self.traveler.current_content().clone();
+
+                self.traveler.next();
+
+                if self.traveler.current_content() != ":=" {
+                    self.traveler.prev();
+
+                    return Ok(Statement::Expression(Box::new(try!(self.expression()))))
+                }
+
+                self.traveler.next();
+
+                if self.traveler.current_content() == "\n" {
+                    Ok(Statement::Definition { var: Rc::new(id), val: None })
+                } else {
+                    let value = try!(self.expression());
+                    Ok(Statement::Definition { var: Rc::new(id), val: Some(Box::new(value)) })
+                }
+            },
             _ => Ok(Statement::Expression(Box::new(try!(self.expression())))),
         }
     }
