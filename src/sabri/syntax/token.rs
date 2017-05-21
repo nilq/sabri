@@ -2,7 +2,8 @@
 pub enum TokenType {
     Block(Vec<Token>),
 
-    NumberLiteral,
+    IntLiteral,
+    FloatLiteral,
     StringLiteral,
     BoolLiteral,
     
