@@ -48,7 +48,7 @@ impl Parser {
             TokenType::FloatLiteral  => Ok(Expression::FloatLiteral(self.traveler.current_content().parse::<f64>().unwrap())),
             TokenType::BoolLiteral   => Ok(Expression::BoolLiteral(self.traveler.current_content() == "true")),
             TokenType::StringLiteral => Ok(Expression::StringLiteral(self.traveler.current_content().clone())),
-            _ => Err(ParserError::new(self.traveler.current().position, &format!("unexpected: {}", self.traveler.current_content()))),
+            _ => Err(ParserError::new_pos(self.traveler.current().position, &format!("unexpected: {}", self.traveler.current_content()))),
         }
     }
 
@@ -58,7 +58,7 @@ impl Parser {
                 let mut p = Parser::new(Traveler::new(v.clone()));
                 Ok(try!(p.parse()))
             },
-            _ => Err(ParserError::new(self.traveler.current().position, &format!("expected block, found: {}", self.traveler.current_content()))),
+            _ => Err(ParserError::new_pos(self.traveler.current().position, &format!("expected block, found: {}", self.traveler.current_content()))),
         }
     }
 

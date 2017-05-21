@@ -10,14 +10,21 @@ pub enum ParserErrorValue {
 #[derive(Debug)]
 pub struct ParserError {
     value:    ParserErrorValue,
-    position: TokenPosition,
+    position: Option<TokenPosition>,
 }
 
 impl ParserError {
-    pub fn new(position: TokenPosition, value: &str) -> ParserError {
+    pub fn new(value: &str) -> ParserError {
         ParserError {
             value: ParserErrorValue::Constant(value.to_owned()),
-            position,
+            position: None,
+        }
+    }
+
+    pub fn new_pos(position: TokenPosition, value: &str) -> ParserError {
+        ParserError {
+            value: ParserErrorValue::Constant(value.to_owned()),
+            position: Some(position),
         }
     }
 }
@@ -25,7 +32,10 @@ impl ParserError {
 impl fmt::Display for ParserError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.value {
-            ParserErrorValue::Constant(ref s) => write!(f, "{}: {}", self.position, s),
+            ParserErrorValue::Constant(ref s) => match self.position {
+                Some(p) => write!(f, "{}: {}", p, s),
+                None    => write!(f, "{}", s),
+            }
         }
     }
 }

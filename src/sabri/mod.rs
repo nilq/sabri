@@ -1,4 +1,6 @@
 pub mod syntax;
+pub mod bytecode;
+
 pub mod value;
 pub mod error;
 pub mod env;

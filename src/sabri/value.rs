@@ -66,3 +66,15 @@ impl fmt::Display for Value {
         }
     }
 }
+
+impl fmt::Debug for Value {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Value::Null       => write!(f, "null"),
+            Value::Bool(b)    => write!(f, "{}", b),
+            Value::Int(i)     => write!(f, "{}", i),
+            Value::Float(fl)  => write!(f, "{}", fl),
+            Value::Str(ref s) => write!(f, "{}", s),
+        }
+    }
+}
