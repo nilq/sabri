@@ -3,6 +3,7 @@ use std::rc::Rc;
 use parser::bytecode::Program;
 use parser::{ParserResult, ParserError};
 
+use sabri::SymTab;
 use sabri::Value;
 
 #[derive(Debug, Clone)]
@@ -24,7 +25,7 @@ pub enum Expression {
 }
 
 impl Expression {
-    pub fn compile(&self, program: &mut Program) -> ParserResult<()> {
+    pub fn compile(&self, sym: &Rc<SymTab>, program: &mut Program) -> ParserResult<()> {
         match *self {
             Expression::IntLiteral(ref n) => {
                 program.add_comment(&format!("{}", *n));
@@ -47,10 +48,10 @@ impl Expression {
                 program.emit_pushlit(index);
             },
 
-            Expression::Identifier(ref id) => match sym.get_id(&*id) {
+            Expression::Identifier(ref id) => match sym.get_name(&*id) {
                 Some((i, env_index)) => {
-                    gen.add_comment(&*id);
-                    gen.emit_getvar(i as u16, env_index as u16)
+                    program.add_comment(&*id);
+                    program.emit_getvar(i as u16, env_index as u16)
                 },
                 None => return Err(ParserError::new(&format!("undeclared identifier: {}", id)))
             },

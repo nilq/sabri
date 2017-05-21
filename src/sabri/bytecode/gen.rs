@@ -235,7 +235,7 @@ impl Program {
         self.instr.push(instr::c_op_12(POPVAL, values));
     }
 
-    pub fn disasm(&self) {
+    pub fn dump(&self) {
         println!("================================================");
         println!("==== INSTRUCTIONS");
         for (addr, &instr) in self.instr.iter().enumerate() {

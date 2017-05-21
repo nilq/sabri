@@ -11,14 +11,14 @@ pub struct SymTab {
 
 impl SymTab {
     pub fn new(parent: Rc<SymTab>, names: &[Rc<String>]) -> SymTab {
-        let mut names = HashMap::new();
+        let mut hash_names = HashMap::new();
         for (i, name) in names.iter().enumerate() {
-            names.insert((**name).clone(), i);
+            hash_names.insert((**name).clone(), i);
         }
 
         SymTab {
             parent: Some(parent),
-            names:  RefCell::new(names),
+            names:  RefCell::new(hash_names),
         }
     }
 

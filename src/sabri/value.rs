@@ -2,7 +2,7 @@ use std::cell::{Ref, RefCell};
 use std::fmt;
 use std::rc::Rc;
 
-use sabri::{RunResult, RunError, NativeFunc};
+use sabri::{RunResult, RunError, NativeFunc, Env};
 
 #[derive(Clone, PartialEq)]
 pub enum Value {
@@ -21,6 +21,10 @@ impl Value {
             Value::Number(f) => f != 0f64,
             _ => true,
         }
+    }
+
+    pub fn native_func(f: fn(&[Value], &Rc<Env>) -> RunResult<Value>) -> Value {
+        Value::NativeFunc(NativeFunc::new(f))
     }
 
     pub fn as_int(&self) -> RunResult<i64> {

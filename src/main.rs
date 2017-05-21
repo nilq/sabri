@@ -4,17 +4,20 @@ use rustyline::error::ReadlineError;
 
 mod sabri;
 use sabri::syntax;
+use sabri::Sabri;
 
 use syntax::{lexer, parser};
 
 use lexer::{BlockTree, process_branch};
-use parser::{Traveler, Parser};
+use parser::{Traveler, Parser, Statement, Expression};
 
 static PROMPT: &'static str = ">> ";
 
 #[allow(dead_code)]
 fn repl() {
     let mut rl = rustyline::Editor::<()>::new();
+
+    let mut sabri = Sabri::new();
 
     loop {
         let readline = rl.readline(PROMPT);
@@ -32,6 +35,16 @@ fn repl() {
                 match parser.parse() {
                     Err(why)  => println!("error: {}", why),
                     Ok(stuff) => for e in stuff {
+                        match e.clone() {
+                            Statement::Expression(ex) => match *ex {
+                                Expression::EOF => (),
+                                _ => match ex.compile(&sabri.sym_tab, &mut sabri.bytecode) {
+                                        Err(why) => println!("error: {}", why),
+                                        Ok(_)    => sabri.dump_bytecode(),
+                                    },
+                            },
+                            _ => (),
+                        }
                         println!("{:#?}", e)
                     },
                 }
