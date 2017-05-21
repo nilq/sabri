@@ -25,7 +25,7 @@ impl ParserError {
 impl fmt::Display for ParserError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.value {
-            ParserErrorValue::Constant(ref s) => write!(f, "{} -> {}", self.position, s),
+            ParserErrorValue::Constant(ref s) => write!(f, "{}: {}", self.position, s),
         }
     }
 }
