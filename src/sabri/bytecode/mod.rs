@@ -3,7 +3,7 @@ pub mod instr;
 pub mod gen;
 pub mod run;
 
-pub use self::gen::FixupContext;
+pub use self::gen::{FixupContext, Program};
 
 pub use super::syntax;
 pub use syntax::parser::{ParserResult, ParserError};

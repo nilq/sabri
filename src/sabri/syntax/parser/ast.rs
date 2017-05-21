@@ -1,3 +1,10 @@
+use std::rc::Rc;
+
+use parser::bytecode::Program;
+use parser::{ParserResult, ParserError};
+
+use sabri::Value;
+
 #[derive(Debug, Clone)]
 pub enum Expression {
     Block(Box<Vec<Statement>>),
@@ -16,6 +23,43 @@ pub enum Expression {
     EOF,
 }
 
+impl Expression {
+    pub fn compile(&self, program: &mut Program) -> ParserResult<()> {
+        match *self {
+            Expression::IntLiteral(ref n) => {
+                program.add_comment(&format!("{}", *n));
+
+                let index = program.add_literal(Value::Number(*n as f64));
+                program.emit_pushlit(index);
+            },
+
+            Expression::FloatLiteral(ref n) => {
+                program.add_comment(&format!("{}", *n));
+
+                let index = program.add_literal(Value::Number(*n));
+                program.emit_pushlit(index);
+            },
+
+            Expression::StringLiteral(ref n) => {
+                program.add_comment(&format!("{}", *n));
+
+                let index = program.add_literal(Value::Str(Rc::new(n.clone())));
+                program.emit_pushlit(index);
+            },
+
+            Expression::Identifier(ref id) => match sym.get_id(&*id) {
+                Some((i, env_index)) => {
+                    gen.add_comment(&*id);
+                    gen.emit_getvar(i as u16, env_index as u16)
+                },
+                None => return Err(ParserError::new(&format!("undeclared identifier: {}", id)))
+            },
+
+            _ => return Err(ParserError::new("accessing unimplemented codegen")),
+        }
+        Ok(())
+    }
+}
 
 #[derive(Debug, Clone)]
 pub enum Statement {
@@ -23,7 +67,6 @@ pub enum Statement {
     Definition(String, Box<Expression>),
     Assignment(Box<Expression>, Box<Expression>),
 }
-
 
 #[derive(Debug, Clone)]
 pub enum Operand {
