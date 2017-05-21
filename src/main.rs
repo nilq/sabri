@@ -1,15 +1,14 @@
 extern crate rustyline;
 
-use rustyline::completion::FilenameCompleter;
 use rustyline::error::ReadlineError;
-use rustyline::Editor;
 
 mod sabri;
 use sabri::syntax;
 
-use syntax::lexer;
+use syntax::{lexer, parser};
 
 use lexer::{BlockTree, process_branch};
+use parser::{Traveler, Parser};
 
 static PROMPT: &'static str = ">> ";
 
@@ -27,7 +26,15 @@ fn repl() {
                 let root = blocks.tree(&indents);
                 let done = process_branch(&root);
 
-                println!("{:#?}", done)
+                let traveler = Traveler::new(done);
+                let mut parser = Parser::new(traveler);
+
+                match parser.parse() {
+                    Err(why)  => println!("error: {}", why),
+                    Ok(stuff) => for e in stuff {
+                        println!("{:#?}", e)
+                    },
+                }
             }
 
             Err(ReadlineError::Interrupted) => {
@@ -63,6 +70,8 @@ hello_world = | greet("world")
 
     let root = blocks.tree(&indents);
     let done = process_branch(&root);
+
+
 
     println!("{:#?}", done)
 }

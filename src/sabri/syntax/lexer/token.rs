@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenType {
     Block(Vec<Token>),
@@ -32,6 +34,12 @@ impl Default for TokenPosition {
     }
 }
 
+impl fmt::Display for TokenPosition {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "(line {}, col {})", self.line, self.col)
+    }
+}
+
 impl TokenPosition {
     pub fn new(line: usize, col: usize) -> TokenPosition {
         TokenPosition {
@@ -43,22 +51,18 @@ impl TokenPosition {
 #[derive(Debug, Clone)]
 pub struct Token {
     pub token_type: TokenType,
-    pos:            TokenPosition,
+    pub position:   TokenPosition,
     content:        String,
 }
 
 #[allow(dead_code)]
 impl Token {
-    pub fn new(token_type: TokenType, pos: TokenPosition, content: String) -> Token {
+    pub fn new(token_type: TokenType, position: TokenPosition, content: String) -> Token {
         Token {
             token_type,
-            pos,
+            position,
             content,
         }
-    }
-
-    pub fn pos(&self) -> &TokenPosition {
-        &self.pos
     }
 
     pub fn content(&self) -> &String {

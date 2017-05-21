@@ -6,6 +6,13 @@ pub enum Expression {
     StringLiteral(String),
     BoolLiteral(bool),
     Identifier(String),
+
+    Operation {
+        left: Box<Expression>,
+        op: Operand,
+        right: Box<Expression>,
+    },
+
     EOF,
 }
 
@@ -13,7 +20,7 @@ pub enum Expression {
 #[derive(Debug, Clone)]
 pub enum Statement {
     Expression(Box<Expression>),
-    Definition(String, Box<Expression>, Type),
+    Definition(String, Box<Expression>),
     Assignment(Box<Expression>, Box<Expression>),
 }
 
