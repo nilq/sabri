@@ -1,3 +1,5 @@
+<img src="https://68.media.tumblr.com/7ff7a8c9fedb63720328c538e6150a7a/tumblr_oo5xfqq8O81w7964eo1_500.png" width="256px" height="256px" align="right">
+
 # sabri
 my favorite working multi-paradigm, interpreted programming language.
 
