@@ -2,7 +2,9 @@ pub mod op;
 pub mod instr;
 pub mod gen;
 pub mod run;
+pub mod closure;
 
+pub use self::closure::Closure;
 pub use self::gen::{FixupContext, Program};
 pub use self::run::Run;
 

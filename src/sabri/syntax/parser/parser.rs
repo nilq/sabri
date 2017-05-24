@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use parser::{Traveler, Expression, Statement, Operand, ParserResult, operand};
+use parser::*;
 use parser::{ParserError, ParserErrorValue};
 
 use lexer::TokenType;
@@ -48,6 +48,12 @@ impl Parser {
                     Ok(Statement::Definition { var: Rc::new(id), val: Some(Box::new(value)) })
                 }
             },
+
+            TokenType::EOL => {
+                self.traveler.next();
+                self.statement()
+            },
+
             _ => Ok(Statement::Expression(Box::new(try!(self.expression())))),
         }
     }
@@ -71,14 +77,15 @@ impl Parser {
             TokenType::BoolLiteral   => Ok(Expression::BoolLiteral(self.traveler.current_content() == "true")),
             TokenType::StringLiteral => Ok(Expression::StringLiteral(self.traveler.current_content().clone())),
             TokenType::Identifier    => {
-                let expr = Expression::Identifier(self.traveler.current_content().clone());
+                let expr = self.traveler.current_content();
 
                 self.traveler.next();
 
                 match self.traveler.current().token_type {
-                    TokenType::Operator => return self.operation(expr),
+                    TokenType::Operator => return self.operation(Expression::Identifier(expr)),
                     TokenType::Symbol => match self.traveler.current_content().as_str() {
-                        "(" => return self.call(expr),
+                        "(" => return self.call(Expression::Identifier(expr)),
+                        ":" => return self.function(expr),
                         _ => (),
                     },
                     TokenType::EOL => {
@@ -87,7 +94,7 @@ impl Parser {
                     _ => return Err(ParserError::new_pos(self.traveler.current().position, &format!("unexpected: {}", self.traveler.current_content()))),
                 }
 
-                Ok(expr)
+                Ok(Expression::Identifier(expr))
             },
             TokenType::Symbol => match self.traveler.current_content().as_str() {
                 "(" => {
@@ -107,6 +114,37 @@ impl Parser {
                 s => Err(ParserError::new_pos(self.traveler.current().position, &format!("unexpected symbol: {}", s))),
             },
             _ => Err(ParserError::new_pos(self.traveler.current().position, &format!("unexpected: {}", self.traveler.current_content()))),
+        }
+    }
+
+    fn function(&mut self, name: String) -> ParserResult<Expression> {
+        self.traveler.next(); // skip colon
+
+        let mut params = Vec::new();
+
+        while self.traveler.current_content() != "->" {
+            match self.traveler.current().token_type {
+                TokenType::Identifier => params.push(Rc::new(self.traveler.current_content())),
+                TokenType::Symbol => match self.traveler.current_content().as_str() {
+                    "," => { self.traveler.next(); },
+                    s   => return Err(ParserError::new(&format!("unexpected symbol: {}", s))),
+                },
+                _ => return Err(ParserError::new(&format!("unexpected token: {}", self.traveler.current_content())))
+            }
+        }
+
+        self.traveler.next(); // skip ->
+
+        match self.traveler.current_content().as_str() {
+            "\n" => {
+                self.traveler.next();
+
+                let lambda = Lambda::new(params, Box::new(try!(self.block())));
+
+                Ok(Expression::Function(Function::new(Rc::new(name), Rc::new(lambda))))
+            },
+
+            s => Err(ParserError::new(&format!("unexpected: {}", s))),
         }
     }
 

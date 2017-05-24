@@ -60,6 +60,10 @@ impl Run {
                     let (args_n, total) = instr::d_op_12_12(instr);
                     let args_n = args_n as usize;
 
+                    if args_n > self.val_stack.len() {
+                        break
+                    }
+
                     let start = self.val_stack.len() - args_n;
 
                     {
@@ -168,7 +172,7 @@ impl Run {
 
                             Some(ret)
                         },
-                        
+
                         _ => return Err(RunError::new(&format!("can't call function: {}", self.val_stack[func_pos])))
                     };
 

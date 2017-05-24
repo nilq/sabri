@@ -1,0 +1,8 @@
+~ a comment
+a := 123
+b := 321
+
+putsl("hey", a % b)
+
+~foo: x y ->
+  ~puts(x, y)

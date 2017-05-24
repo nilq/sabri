@@ -6,6 +6,7 @@ use parser::{ParserResult, ParserError};
 
 use sabri::SymTab;
 use sabri::Value;
+use sabri::bytecode;
 
 #[derive(Debug, Clone)]
 pub enum Expression {
@@ -15,6 +16,9 @@ pub enum Expression {
     StringLiteral(String),
     BoolLiteral(bool),
     Identifier(String),
+
+    Lambda(Lambda),
+    Function(Function),
 
     Call {
         func: Box<Expression>,
@@ -62,7 +66,9 @@ impl Expression {
                 None => return Err(ParserError::new(&format!("undeclared identifier: {}", id)))
             },
 
-            Expression::Call {ref func, ref args} => {
+            Expression::Lambda(ref l) => return Ok(()),
+
+            Expression::Call { ref func, ref args } => {
                 try!(func.compile(sym, program));
 
                 for a in &**args {
@@ -106,7 +112,7 @@ impl Expression {
             },
 
             Expression::Operation {ref left, ref op, ref right} => match op {
-                &Operand::Assign => try!(self.compile_assignment(&*left, &*right, sym, program)),
+                &Operand::Assign => try!(Self::compile_assignment(&*left, &*right, sym, program)),
                 o => match o {
                     &Operand::Add |
                     &Operand::Sub |
@@ -148,7 +154,7 @@ impl Expression {
         Ok(())
     }
 
-    pub fn compile_assignment(&self, l: &Expression, value: &Expression, sym: &Rc<SymTab>, program: &mut Program) -> ParserResult<()> {
+    pub fn compile_assignment(l: &Expression, value: &Expression, sym: &Rc<SymTab>, program: &mut Program) -> ParserResult<()> {
         match *l {
             Expression::Identifier(ref s) => match sym.get_name(&*s) {
                 Some((i, env_index)) => {
@@ -184,6 +190,58 @@ impl Statement {
             Statement::Expression(ref e) => e.compile(sym, program),
             _ => Err(ParserError::new("unimplemented statement bytecode"))
         }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Lambda {
+    params: Vec<Rc<String>>,
+    block:  Box<Vec<Statement>>,
+}
+
+impl Lambda {
+    pub fn new(params: Vec<Rc<String>>, block: Box<Vec<Statement>>) -> Lambda {
+        Lambda {
+            params, block,
+        }
+    }
+
+    pub fn compile(&self, sym: &Rc<SymTab>, program: &mut Program) -> ParserResult<(u32, usize)> {
+        program.set_env_level(0);
+        program.new_func_context();
+
+        let addr = program.addr();
+        let new_sym = Rc::new(SymTab::new(sym.clone(), &self.params));
+
+        try!(Expression::Block(self.block.clone()).compile(&new_sym, program));
+
+        program.add_comment("null default");
+        program.emit_pushlit(0);
+
+        let end = program.addr();
+        program.emit_ret();
+
+        try!(program.close_func_context(end));
+
+        return Ok((addr, self.params.len()))
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Function {
+    name: Rc<String>,
+    def:  Rc<Lambda>,
+}
+
+impl Function {
+    pub fn new(name: Rc<String>, def: Rc<Lambda>) -> Function {
+        Function {
+            name, def,
+        }
+    }
+
+    pub fn compile(&self, sym: &Rc<SymTab>, program: &mut Program) -> ParserResult<(u32, usize)> {
+        self.def.compile(sym, program)
     }
 }
 
